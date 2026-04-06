@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 data class OauthAuthorizationServer(
     @SerialName("issuer") val issuer: String,
     @SerialName("authorization_endpoint") val authorizationEndpoint: String?,
+    @SerialName("challenge_endpoint") val challengeEndpoint: String?,
     @SerialName("token_endpoint") val tokenEndpoint: String?,
     @SerialName("response_types_supported") val responseTypesSupported: List<String>?,
     @SerialName("grant_types_supported") val grantTypesSupported: List<String>?,

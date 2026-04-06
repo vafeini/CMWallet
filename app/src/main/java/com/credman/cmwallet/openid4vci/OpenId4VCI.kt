@@ -14,6 +14,7 @@ import com.credman.cmwallet.openid4vci.data.CredentialRequest
 import com.credman.cmwallet.openid4vci.data.CredentialResponse
 import com.credman.cmwallet.openid4vci.data.CredentialResponseEncryptionInReuqest
 import com.credman.cmwallet.openid4vci.data.JwkKey
+import com.credman.cmwallet.openid4vci.data.ChallengeResponse
 import com.credman.cmwallet.openid4vci.data.NonceResponse
 import com.credman.cmwallet.openid4vci.data.OauthAuthorizationServer
 import com.credman.cmwallet.openid4vci.data.ParResponse
@@ -155,6 +156,23 @@ class OpenId4VCI(val credentialOfferJson: String) {
         return Pair(result.body(), dpopNonce)
     }
 
+    /**
+     * Returns challenge response, and dpop nonce from header if present; or null if the challenge
+     * endpoint isn't supported / specified by the issuer.
+     * https://datatracker.ietf.org/doc/html/draft-ietf-oauth-attestation-based-client-auth-08#name-challenge-retrieval
+     *
+     * Note: dpop nonce being returned from the challenge endpoint hasn't been standardized.
+     */
+    suspend fun requestChallengeFromEndpoint(): Pair<ChallengeResponse, String?>? {
+        val challengeEndpoint = requestAuthServerMetadata(
+            authServerIdentifier()
+        ).challengeEndpoint ?: return null
+        val result = httpClient.post(challengeEndpoint)
+        val dpopNonce = result.headers.get("dpop-nonce")
+        Log.d(TAG, "Dpop nonce from AS challenge endpoint: ${dpopNonce}")
+        return Pair(result.body(), dpopNonce)
+    }
+
     /** Returns null if par endpoint isn't specified in the authorization server metadata. */
     @OptIn(ExperimentalUuidApi::class)
     suspend fun requestParEndpoint(): ParResponse? {
@@ -214,7 +232,7 @@ class OpenId4VCI(val credentialOfferJson: String) {
         return createJWTES256(clientAttestationHeader, clientAttestationPayload, WALLET_CERT_PRV_KEY)
     }
 
-    fun generateClientAttestationPopJwt(): String {
+    fun generateClientAttestationPopJwt(challenge: String?): String {
         val clientAttestationPopHeader = buildJsonObject {
             put("typ", "oauth-client-attestation-pop+jwt")
             put("alg", "ES256")
@@ -223,8 +241,7 @@ class OpenId4VCI(val credentialOfferJson: String) {
             put("aud", authServerIdentifier())
             put("jti", Uuid.random().toByteArray().encodeBase64())
             put("iat", Instant.now().epochSecond)
-            // TODO: support challenge
-//            put("challenge", "5c1a9e10-29ff-4c2b-ae73-57c0957c09c4")
+            put("challenge", challenge)
         }
         return createJWTES256(clientAttestationPopHeader, clientAttestationPopPayload, kp.private)
     }
@@ -256,9 +273,11 @@ class OpenId4VCI(val credentialOfferJson: String) {
         val endpoint = requestAuthServerMetadata(authServer).tokenEndpoint
         require(endpoint != null) { "Token Endpoint Missed from Auth Server metadata" }
 
+        val challengeAndDpopNonce = requestChallengeFromEndpoint()
+
         val clientAttestation = getClientAttestationJwt()
-        val clientAttestationPop = generateClientAttestationPopJwt()
-        val dpop = generateDpopJwt("POST", endpoint, dpopNonce)
+        val clientAttestationPop = generateClientAttestationPopJwt(challengeAndDpopNonce?.first?.attestationChallenge)
+        val dpop = generateDpopJwt("POST", endpoint, challengeAndDpopNonce?.second)
 
         val result = httpClient.submitForm(
             url = endpoint,
