@@ -452,7 +452,7 @@ class OpenId4VCI(val credentialOfferJson: String) {
         return ProofCreationResult(
             proofs = Proofs(
                 androidKeystoreAttestation = certificates.map { certificateArray ->
-                    certificateArray.map { certificate -> certificate.encoded.toBase64NoPadding() }
+                    certificateArray.map { certificate -> certificate.encoded.encodeBase64() }
                 }
             ),
             deviceKeys = deviceKeys,
