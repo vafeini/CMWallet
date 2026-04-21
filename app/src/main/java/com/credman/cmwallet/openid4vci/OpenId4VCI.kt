@@ -224,7 +224,7 @@ class OpenId4VCI(val credentialOfferJson: String) {
         val clientAttestationPayload = buildJsonObject {
             put("sub", WALLET_CLIENT_ID)
             put("wallet_name", WALLET_NAME)
-            put("exp", Instant.now().epochSecond + 3000)
+            put("exp", Instant.now().epochSecond + 432000 /* 5 days */)
             put("cnf", buildJsonObject {
                 put("jwk", kp.public.toJWK())
             })
