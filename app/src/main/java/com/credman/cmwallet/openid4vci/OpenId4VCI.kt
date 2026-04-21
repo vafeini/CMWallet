@@ -108,7 +108,7 @@ class OpenId4VCI(val credentialOfferJson: String) {
     private val authServerCache = mutableMapOf<String, OauthAuthorizationServer>()
     private val httpClient = HttpClient(CIO) {
         install(ContentNegotiation) {
-            json()
+            json(json)
         }
     }
 
