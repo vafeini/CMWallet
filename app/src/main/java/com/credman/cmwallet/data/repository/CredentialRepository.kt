@@ -51,8 +51,6 @@ class CredentialRepository {
     var privAppsJson = "{}"
         private set
 
-    var openId4VCITestRequestJson = "{}"
-
     private val testCredentialsDataSource = TestCredentialsDataSource()
     private val credentialDatabaseDataSource = CredentialDatabaseDataSource()
 

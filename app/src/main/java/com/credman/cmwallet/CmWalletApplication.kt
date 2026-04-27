@@ -69,7 +69,6 @@ class CmWalletApplication : Application() {
         // Add the test credentials from the included json
         credentialRepo.addCredentialsFromJson(testCredentialsJson)
         credentialRepo.setPrivAppsJson(loadAppsJson().decodeToString())
-        credentialRepo.openId4VCITestRequestJson = loadOpenId4VCIRequestJson().decodeToString()
 
         // Listen for new credentials and update the registry.
         applicationScope.launch(Dispatchers.IO) {
@@ -161,9 +160,5 @@ class CmWalletApplication : Application() {
 
     private fun loadAppsJson(): ByteArray {
         return readAsset("apps.json")
-    }
-
-    private fun loadOpenId4VCIRequestJson(): ByteArray {
-        return readAsset("openid4vci_request.json")
     }
 }
