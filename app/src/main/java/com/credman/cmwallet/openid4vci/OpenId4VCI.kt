@@ -5,6 +5,7 @@ import android.security.keystore.KeyProperties
 import android.util.Base64
 import android.util.Log
 import com.credman.cmwallet.CmWalletApplication.Companion.TAG
+import com.credman.cmwallet.CmWalletApplication.Companion.getCurrentTime
 import com.credman.cmwallet.createJWTES256
 import com.credman.cmwallet.jweDecrypt
 import com.credman.cmwallet.jweSerialization
@@ -224,7 +225,7 @@ class OpenId4VCI(val credentialOfferJson: String) {
         val clientAttestationPayload = buildJsonObject {
             put("sub", WALLET_CLIENT_ID)
             put("wallet_name", WALLET_NAME)
-            put("exp", Instant.now().epochSecond + 432000 /* 5 days */)
+            put("exp", getCurrentTime() + 432000 /* 5 days */)
             put("cnf", buildJsonObject {
                 put("jwk", kp.public.toJWK())
             })
@@ -240,7 +241,7 @@ class OpenId4VCI(val credentialOfferJson: String) {
         val clientAttestationPopPayload = buildJsonObject {
             put("aud", authServerIdentifier())
             put("jti", Uuid.random().toByteArray().encodeBase64())
-            put("iat", Instant.now().epochSecond)
+            put("iat", getCurrentTime())
             put("challenge", challenge)
         }
         return createJWTES256(clientAttestationPopHeader, clientAttestationPopPayload, kp.private)
@@ -256,7 +257,7 @@ class OpenId4VCI(val credentialOfferJson: String) {
             put("jti", Uuid.random().toByteArray().encodeBase64())
             put("htm", method)
             put("htu", endpoint)
-            put("iat", Instant.now().epochSecond)
+            put("iat", getCurrentTime())
             ath?.let { put("ath", ath) }
             dpopNonce?.let { put("nonce", dpopNonce) }
         }
@@ -405,7 +406,7 @@ class OpenId4VCI(val credentialOfferJson: String) {
                 },
                 payload = buildJsonObject {
                     put("aud", credentialOffer.credentialIssuer)
-                    put("iat", Instant.now().epochSecond)
+                    put("iat", getCurrentTime())
                     put("nonce", nonceResponse.cNonce)
                 },
                 privateKey = privateKey

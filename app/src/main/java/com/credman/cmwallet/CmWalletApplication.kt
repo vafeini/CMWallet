@@ -14,11 +14,14 @@ import androidx.room.Room
 import com.credman.cmwallet.data.repository.CredentialRepository
 import com.credman.cmwallet.data.room.CredentialDatabase
 import com.credman.cmwallet.mdoc.MDoc
+import com.google.android.gms.time.TrustedTime
+import com.google.android.gms.time.TrustedTimeClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
+import java.time.Instant
 import kotlin.io.encoding.ExperimentalEncodingApi
 
 
@@ -29,6 +32,8 @@ class CmWalletApplication : Application() {
 
         lateinit var walletIcon: Bitmap
 
+        var trustedTimeClient: TrustedTimeClient? = null
+
         fun computeClientId(callingAppInfo: CallingAppInfo): String {
             val origin = callingAppInfo.getOrigin(credentialRepo.privAppsJson)
             return if (origin == null) {
@@ -38,15 +43,24 @@ class CmWalletApplication : Application() {
             }
         }
 
+        fun getCurrentTime() =
+            trustedTimeClient?.computeCurrentInstant()?.epochSecond ?: Instant.now().epochSecond
+
         const val TAG = "CmWalletApplication"
     }
 
     private val registryManager = RegistryManager.create(this)
+
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     @OptIn(ExperimentalDigitalCredentialApi::class, ExperimentalEncodingApi::class)
     override fun onCreate() {
         super.onCreate()
+        TrustedTime.createClient(this).addOnSuccessListener {
+            trustedTimeClient = it
+        }.addOnFailureListener {
+            Log.e(TAG, "Could not get trusted time client $it")
+        }
 
         walletIcon = resources.getDrawable(R.mipmap.ic_launcher, theme).toBitmap()
 

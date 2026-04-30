@@ -2,6 +2,7 @@ package com.credman.cmwallet
 
 import android.util.Log
 import com.credman.cmwallet.sdjwt.jwsSignatureToDer
+import com.google.android.gms.time.TrustedTimeClient
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -29,6 +30,7 @@ import java.security.spec.ECParameterSpec
 import java.security.spec.ECPoint
 import java.security.spec.ECPublicKeySpec
 import java.security.spec.PKCS8EncodedKeySpec
+import java.time.Instant
 import java.util.Arrays
 import javax.crypto.Cipher
 import javax.crypto.KeyAgreement

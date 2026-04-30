@@ -9,6 +9,7 @@ import java.math.BigInteger
 import java.nio.ByteBuffer
 import java.security.MessageDigest
 import android.util.Base64
+import com.credman.cmwallet.CmWalletApplication.Companion.getCurrentTime
 import com.credman.cmwallet.createJWTES256
 import com.credman.cmwallet.jwsDeserialization
 import com.credman.cmwallet.loadECPrivateKey
@@ -143,7 +144,7 @@ class SdJwt(
             put("alg", "ES256")
         }
         val kbPayload = buildJsonObject {
-            put("iat", Instant.now().epochSecond)
+            put("iat", getCurrentTime())
             put("aud", aud)
             put("nonce", nonce)
             put("sd_hash", digest)
