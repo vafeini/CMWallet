@@ -99,7 +99,7 @@ class CreateCredentialActivity : ComponentActivity() {
 
         ModalBottomSheet(
             onDismissRequest = {
-                finishWithError(exception = CreateCredentialCancellationException())
+                this@CreateCredentialActivity.finish()
             },
             sheetState = sheetState
         ) {
@@ -180,7 +180,7 @@ class CreateCredentialActivity : ComponentActivity() {
                         TextButton(
                             modifier = Modifier.padding(20.dp, 10.dp, 10.dp, 20.dp ),
                             onClick = {
-                                viewModel.onConfirm()
+                                finish()
                             }
                         ) {
                             Text("Cancel")
